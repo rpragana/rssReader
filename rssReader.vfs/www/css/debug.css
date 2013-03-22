@@ -1,0 +1,137 @@
+* {
+	margin:0;
+	padding:0;
+	font-family: sans-serif; 
+}
+
+.tiny {
+	display: none;
+	color: #e0e0ff;
+	font-size: 50%;
+	font-weight: bold;
+	float: right;
+	text-decoration: none;
+}
+
+h1 {
+	margin: 10px;
+	float: right;
+	color: #001a46;
+	font-size: 110%;
+	font-weight: bold;
+	font-family: sans;
+	text-shadow: 1px 1px 3px black;
+}
+
+p.warn {
+	background: #e9eddb;
+	border: 2px dotted #604040;
+	opacity: 0.9;
+	padding: 18px;
+	text-shadow: 1.5px 1.5px 3px #804040;
+	color: #b00000;
+	font-weight: bold;
+}
+
+#cmd {
+	height: 80px;
+	/*position: fixed;
+	bottom: 0px;
+	left: 0px;*/
+	/*padding: 10px 5px;*/
+}
+
+#cmd textarea {
+	float: right;
+	margin: 10px;
+	background: #fffff8;
+	width: 98%;
+	height: 100%;*/
+	resize: none;
+}
+
+#log pre {
+	margin: 0;
+	padding: 0;
+	clear: none;
+	/*clear: both;*/
+
+	/* wrap long urls */
+	white-space: pre;           /* CSS 2.0 */
+	white-space: pre-wrap;      /* CSS 2.1 */
+	white-space: pre-line;      /* CSS 3.0 */
+	white-space: -pre-wrap;     /* Opera 4-6 */
+	white-space: -o-pre-wrap;   /* Opera 7 */
+	white-space: -moz-pre-wrap; /* Mozilla */
+	white-space: -hp-pre-wrap;  /* HP Printers */
+	word-wrap: break-word;      /* IE 5+ */
+}
+
+#log .input {
+	padding-left: 10px;
+	color: #00f;
+}
+
+#log .answer {
+	color: #000;
+}
+
+#log .error {
+	color: #c00;
+}
+
+#log .aux {
+	color: #006;
+}
+
+.request {
+	color: #608;
+}
+
+.status {
+	color: #c60;
+}
+
+.active {
+	background-color: #f88;
+}
+
+#log {
+	width: 65%;
+	float: left;
+	padding: 5px;
+}
+
+.logger {
+	font-size: 70%;
+	color: #080;
+}
+
+#logger {
+	float: right;
+	margin: 10px;
+	background: #ffc;
+	/*width: 300px;*/
+	width: 30%;
+	padding: 8px;
+	border: 1px solid blue;
+	min-height: 250px;	
+	/* wrap long urls */
+	white-space: pre;           /* CSS 2.0 */
+	white-space: pre-wrap;      /* CSS 2.1 */
+	white-space: pre-line;      /* CSS 3.0 */
+	white-space: -pre-wrap;     /* Opera 4-6 */
+	white-space: -o-pre-wrap;   /* Opera 7 */
+	white-space: -moz-pre-wrap; /* Mozilla */
+	white-space: -hp-pre-wrap;  /* HP Printers */
+	word-wrap: break-word;      /* IE 5+ */
+}
+
+#btn_exit {
+	margin: 10px;
+}
+
+button {
+	padding: 3px 8px;
+}
+

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>RSS Feed Reader (port 15732)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+	
+	<link href="css/jqueryFileTree.css" type="text/css" rel="stylesheet" />
+    <link href="css/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
+	<style>
+			.demo {
+				width: 25%;
+				height: 500px;
+				border-top: solid 1px #BBB;
+				border-left: solid 1px #BBB;
+				border-bottom: solid 1px #FFF;
+				border-right: solid 1px #FFF;
+				background: #FFF;
+				overflow: scroll;
+				padding: 5px;
+				
+				float: left;	
+			}
+
+			.editor-wrapper {
+					float: right;
+					width: 73%;
+			}			
+			#editArea {
+				height: 500px; 
+				width: 100%;
+			}
+
+			h1.demo1 {
+			  font-size: 72px;
+  				background: -webkit-linear-gradient(#800, #0f0);
+  				background-clip: text;
+  				-webkit-background-clip: text;
+  				text-fill-color: transparent;
+  				-webkit-text-fill-color: transparent;
+			}
+
+		</style>
+
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+	
+	<link rel="stylesheet" href="css/font-awesome.css">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+                                   <link rel="shortcut icon" href="../assets/ico/favicon.png">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">RSS Reader</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+			  <li><a href="/log" target="_blank">Log/debug</a></li>
+			  <li><a href="#">Links count:<span id="lkcnt"></span> in 
+					  <span id="feedcnt"></span> feeds</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="row">
+        <div class="span6">
+ 		<ul id="feedContentsEven">
+		</ul>	
+  		</div>
+        <div class="span6">
+ 		<ul id="feedContentsOdd">
+		</ul>	
+        </div>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; Rildo Pragana, 2013</p>
+      </footer>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap-transition.js"></script>
+    <script src="js/bootstrap-alert.js"></script>
+    <script src="js/bootstrap-modal.js"></script>
+    <script src="js/bootstrap-dropdown.js"></script>
+    <script src="js/bootstrap-scrollspy.js"></script>
+    <script src="js/bootstrap-tab.js"></script>
+    <script src="js/bootstrap-tooltip.js"></script>
+    <script src="js/bootstrap-popover.js"></script>
+    <script src="js/bootstrap-button.js"></script>
+    <script src="js/bootstrap-collapse.js"></script>
+    <script src="js/bootstrap-carousel.js"></script>
+    <script src="js/bootstrap-typeahead.js"></script>
+	
+	<script src="js/jquery.ui.position.js"></script>
+	<script src="js/jquery.contextMenu.js"></script>
+	<script src="js/underscore.js"></script>
+	<script src="js/backbone.js"></script>
+	<script src="js/mustache.js"></script>
+	<script src="js/jquery.jfeed.js"></script>
+	<script src="js/jquery.dateFormat-1.0.js"></script>
+<!--	<script src="js/jqueryFileTree.js"></script>
+	<script src="js/edit_area_full.js"></script>
+	-->
+
+	<script>
+
+function isValidDate(d) {
+  if ( Object.prototype.toString.call(d) !== "[object Date]" )
+    return false;
+  return !isNaN(d.getTime());
+}
+
+$(document).ready(function(){
+	var n=0;
+	var even=-1;
+	var lkcnt = 0;
+	var feedcnt = 0;
+	var feedListurl="/rdfeed?cmd=feeds"
+	$.getJSON(feedListurl, function (feedList){
+		$.each(feedList, function(key, val) {
+			var feedurl = val.feed;
+			var siteurl = val.url;
+			//console.log(key+" -- "+JSON.stringify(feed));	
+			/*$('#feedList').append('<li><a href="'+feedurl+
+					'" target="_blank">'+feedurl+'</a></li>');*/
+
+			/* read RSS feed and process it */
+			//var proxyurl = "/rdfeed?url="+encodeURIComponent(feedurl);
+			var proxyurl = "/rdfeed?url="+feedurl;
+			//if (n===0) { 
+			//n++;
+			console.log('START GET FEEDURL '+feedurl);
+			
+//$.get(proxyurl, function(data) {
+//    var $xml = $(data);
+//	console.log('PROCESS '+feedurl);
+//    $xml.find("item").each(function() {
+//        var $this = $(this),
+//            item = {
+//                title: $this.find("title").text(),
+//                link: $this.find("link").text(),
+//                description: $this.find("description").text(),
+//                pubDate: $this.find("pubDate").text(),
+//                author: $this.find("author").text()
+//        	};
+//		html = '<li><h5>'+'<a href="'+item.link+'">'+item.title+'</a>'
+//				+ '</h5></li>';
+//		jQuery('#feedContents').append(html);
+//    });
+//});
+
+//var xml = "<rss version='2.0'><channel><title>RSS Title</title></channel></rss>",
+//xmlDoc = $.parseXML( xml ),
+//$xml = $( xmlDoc ),
+//$title = $xml.find( "title" );
+
+			jQuery.getFeed({
+        		url: proxyurl,
+        		success: function(feed) {
+					console.log('PROCESS '+feedurl);
+					var html = '';
+					even++;
+					var column = !(even%2) ? 
+						"#feedContentsEven" : "#feedContentsOdd";
+					lkcnt += feed.items.length;
+					$('#lkcnt').text(lkcnt);
+					feedcnt++;
+					$('#feedcnt').text(feedcnt);
+					html += '<h5><a href="'+siteurl+'" target="_blank">'+
+									feed.title+"</a></h5>";
+					for(var i = 0; i < feed.items.length /*&& i < 15*/; i++) {
+						var item = feed.items[i];
+						var itemDt = new Date(item.updated);
+						var dt;
+						if (isValidDate(itemDt)) {
+							dt = $.format.date(itemDt, 'dd/M/yyyy');
+						} else {
+							dt = "--/--/----";
+						}
+						html += '<li>'
+						+'<small>'+dt+'</small> '
+						+ '<a href="'
+						+ item.link
+						+ '" target="_blank">'
+						+ item.title
+						+ '</a>';
+						
+						/*html += '<div class="updated">'
+						+ item.updated
+						+ '</div>';*/
+						
+						/*html += '<div>'
+						+ item.description
+						+ '</div>';*/
+				
+						html += '</li>'
+					}
+					//jQuery('#feedContents').append(html);
+					jQuery(column).append(html);
+				}    
+			});
+			//} /* end of "if n==0" */
+		 });
+	});
+});
+	</script>
+
+  </body>
+</html>
+
