@@ -113,6 +113,7 @@
       <footer>
         <p>&copy; Rildo Pragana, 2013</p>
       </footer>
+	<div id="feedsList" style="display: none;"></div>
 
     </div> <!-- /container -->
 
@@ -135,14 +136,15 @@
 	
 	<script src="js/jquery.ui.position.js"></script>
 	<script src="js/jquery.contextMenu.js"></script>
-	<script src="js/underscore.js"></script>
+<!--	<script src="js/underscore.js"></script>
 	<script src="js/backbone.js"></script>
 	<script src="js/mustache.js"></script>
+-->
 	<script src="js/jquery.jfeed.js"></script>
 	<script src="js/jquery.dateFormat-1.0.js"></script>
 <!--	<script src="js/jqueryFileTree.js"></script>
 	<script src="js/edit_area_full.js"></script>
-	-->
+-->
 
 	<script>
 
@@ -157,45 +159,23 @@ $(document).ready(function(){
 	var even=-1;
 	var lkcnt = 0;
 	var feedcnt = 0;
-	var feedListurl="/rdfeed?cmd=feeds"
-	$.getJSON(feedListurl, function (feedList){
-		$.each(feedList, function(key, val) {
-			var feedurl = val.feed;
-			var siteurl = val.url;
-			//console.log(key+" -- "+JSON.stringify(feed));	
-			/*$('#feedList').append('<li><a href="'+feedurl+
-					'" target="_blank">'+feedurl+'</a></li>');*/
-
+	var feedListurl="/rdfeed?cmd=rawfeeds&bmarks=bmarks.html"
+	
+	console.log("WILL DO: GET "+feedListurl);
+	$.get(feedListurl, function(html){
+		var feedsList;	
+		$('#feedsList').html(html);
+		feedsList = $('#feedsList a');
+		$.each(feedsList, function(key, val) {
+			var feedurl = $(this).attr('feedurl');	
+			var siteurl = $(this).attr('href');	
+				
 			/* read RSS feed and process it */
 			//var proxyurl = "/rdfeed?url="+encodeURIComponent(feedurl);
 			var proxyurl = "/rdfeed?url="+feedurl;
-			//if (n===0) { 
-			//n++;
 			console.log('START GET FEEDURL '+feedurl);
 			
-//$.get(proxyurl, function(data) {
-//    var $xml = $(data);
-//	console.log('PROCESS '+feedurl);
-//    $xml.find("item").each(function() {
-//        var $this = $(this),
-//            item = {
-//                title: $this.find("title").text(),
-//                link: $this.find("link").text(),
-//                description: $this.find("description").text(),
-//                pubDate: $this.find("pubDate").text(),
-//                author: $this.find("author").text()
-//        	};
-//		html = '<li><h5>'+'<a href="'+item.link+'">'+item.title+'</a>'
-//				+ '</h5></li>';
-//		jQuery('#feedContents').append(html);
-//    });
-//});
-
-//var xml = "<rss version='2.0'><channel><title>RSS Title</title></channel></rss>",
-//xmlDoc = $.parseXML( xml ),
-//$xml = $( xmlDoc ),
-//$title = $xml.find( "title" );
-
+			//----- get each individual rss feed
 			jQuery.getFeed({
         		url: proxyurl,
         		success: function(feed) {
@@ -241,7 +221,6 @@ $(document).ready(function(){
 					jQuery(column).append(html);
 				}    
 			});
-			//} /* end of "if n==0" */
 		 });
 	});
 });

@@ -19,6 +19,13 @@ set argv [lrange $argv 1 end]
 package require Tk
 #wm withdraw .
 tk appname tatu
+set fn [file join $starkit::topdir appname]
+if {[file isfile $fn]} {
+	set f [open $fn r]
+	tk appname [read $f]
+	close $f
+}
+
 wm geometry . -0+0
 proc topblink {} {
 	if {[. cget -bg] eq "#c0c0a0"} {
@@ -540,6 +547,7 @@ equal keys must be indexed"
 					[string map {\n \r\n} $C(body)]]
 			}
 			#tatu::log "Content-length: $len"
+			#puts "Content-length: $len"
 			puts $sock "Content-length: $len"
 		}
 		#puts $sock "Connection: close"
@@ -635,6 +643,7 @@ namespace eval tatu {
 		sock ""
 		tlsport 8001
 		socktls ""
+		appname "tatu"
 	}
 	variable default "index.html"
 	variable root [file join $::starkit::topdir www]
@@ -791,13 +800,14 @@ proc tatu::addRoute {route cmd {log 1} {protocols {http https}}} {
 		}
 	}
 	append re \$
-	lappend routes $re $vars $cmd $log $protocols
+	lappend routes [list $re $vars $cmd $log $protocols]
 }
 
 proc tatu::matchRoute {path {port 0}} {
 	variable routes
 	variable server
-	foreach {re vars cmd log protocols} $routes {
+	foreach route $routes {
+		lassign $route re vars cmd log protocols
 		set r [regexp -inline $re $path]
 		if {$r ne ""} {
 			### check if protocol match
