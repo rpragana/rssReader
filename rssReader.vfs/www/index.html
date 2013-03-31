@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <title>RSS Feed Reader (port 15732)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -81,14 +81,28 @@
             <span class="icon-bar"></span>
           </button>
           <a class="brand" href="#">RSS Reader</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav">
+		  <div class="nav-collapse collapse">
+			<ul class="nav">
+ 					<li><button class="btn" id="refresh">Subject</button>
+					<button class="btn dropdown-toggle" data-toggle="dropdown">
+						<span class="caret"></span></button>
+    				<ul id="subjects" class="dropdown-menu">
+    					<!-- dropdown menu links 
+						<li><a class="subj" tabindex="-1">javascript</a></li>
+						<li><a class="subj" tabindex="-1">business</a></li>
+						<li><a class="subj" tabindex="-1">mobile</a></li>
+						-->	
+					</ul>
+				</li>
               <li class="active"><a href="">Home</a></li>
               <li><a href="#about">About</a></li>
               <li><a href="#contact">Contact</a></li>
 			  <li><a href="/log" target="_blank">Log/debug</a></li>
+
+
 			  <li><a href="#">Links count:<span id="lkcnt"></span> in 
-					  <span id="feedcnt"></span> feeds</a></li>
+					  <span id="feedcnt"></span> feeds of <span
+							  id="selFeedsCnt"></span></a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -98,20 +112,23 @@
     <div class="container">
 
       <div class="row">
-        <div class="span6">
- 		<ul id="feedContentsEven">
+        <!--<div class="span6">
+ 		<ul id="feedContentsEven" class="feedContents">
 		</ul>	
   		</div>
         <div class="span6">
- 		<ul id="feedContentsOdd">
+ 		<ul id="feedContentsOdd" class="feedContents">
 		</ul>	
-        </div>
+		</div>-->
+        <div class="span12">
+ 		<ul id="feedContents">
+		</ul>	
+  		</div>
       </div>
-
       <hr>
 
       <footer>
-        <p>&copy; Rildo Pragana, 2013</p>
+        <p>&copy; Copyright &mdash; MIT Licensed &mdash;  Rildo Pragana, 2013</p>
       </footer>
 	<div id="feedsList" style="display: none;"></div>
 
@@ -121,6 +138,7 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="js/jquery.js"></script>
+    <script src="js/jquery-migrate-1.1.1.js"></script>
     <script src="js/bootstrap-transition.js"></script>
     <script src="js/bootstrap-alert.js"></script>
     <script src="js/bootstrap-modal.js"></script>
@@ -154,74 +172,189 @@ function isValidDate(d) {
   return !isNaN(d.getTime());
 }
 
+/**
+ * jQuery.fn.sortElements
+ * --------------
+ * @param Function comparator:
+ *   Exactly the same behaviour as [1,2,3].sort(comparator)
+ *   
+ * @param Function getSortable
+ *   A function that should return the element that is
+ *   to be sorted. The comparator will run on the
+ *   current collection, but you may want the actual
+ *   resulting sort to occur on a parent or another
+ *   associated element.
+ *   
+ *   E.g. $('td').sortElements(comparator, function(){
+ *      return this.parentNode; 
+ *   })
+ *   
+ *   The <td>'s parent (<tr>) will be sorted instead
+ *   of the <td> itself.
+ */
+jQuery.fn.sortElements = (function(){
+    var sort = [].sort;
+    return function(comparator, getSortable) {
+        getSortable = getSortable || function(){return this;};
+        var placements = this.map(function(){
+            var sortElement = getSortable.call(this),
+                parentNode = sortElement.parentNode,
+                // Since the element itself will change position, we have
+                // to have some way of storing its original position in
+                // the DOM. The easiest way is to have a 'flag' node:
+                nextSibling = parentNode.insertBefore(
+                    document.createTextNode(''),
+                    sortElement.nextSibling
+                );
+            return function() {
+                if (parentNode === this) {
+                    throw new Error(
+                        "You can't sort elements if any one is a descendant of another."
+                    );
+                }
+                // Insert before flag:
+                parentNode.insertBefore(this, nextSibling);
+                // Remove flag:
+                parentNode.removeChild(nextSibling);
+            };
+        });
+        return sort.call(this, comparator).each(function(i){
+            placements[i].call(getSortable.call(this));
+        });
+    };
+})();
+
+function processFeed(feedurl,siteurl,subject) {
+	return function(feed) {
+		console.log('******* PROCESS '+feedurl+'\nFEED------------\n'+
+				JSON.stringify(feed)+'\n\n\n\n');
+		var markup = '';
+		var rendered;
+		var chkdt;
+		var n;
+		if (!feed.items) { 
+			$(document).trigger('countersUpdate',[0]);
+			return; 
+		}	
+		n = feed.items.length;
+		n = n<15 ? n : 15;	
+		$(document).trigger('countersUpdate',[n]);
+		
+		rendered=0;
+		chkdt = new Date().getTime(); 
+		chkdt -= 60*60*24*1000*5; // 5 days ago
+		for(var i = 0; i < feed.items.length /*&& i < 10*/; i++) {
+			var item = feed.items[i];
+			var itemDt = new Date(item.updated);
+			var dt;
+			if (isValidDate(itemDt)) {
+				dt = $.format.date(itemDt, 'dd/M/yyyy');
+			} else {
+				//break;
+				dt = "--/--/----";
+				itemDt = 0;
+			}
+			//if (itemDt.getTime() < chkdt) { break; }
+			if (rendered === 0) {
+				rendered=1;
+				markup += '<div class="feedSrc" timestamp="'
+						+itemDt.getTime()+'" subject="'
+						+subject.attr('title')+'"><h5>'
+						+subject.attr('title')
+						+' - <a href="'+siteurl+
+					'" target="_blank">'+feed.title+'</a></h5>';
+				//console.log('ADDED '+feed.link+' *** DATE='+dt);
+			}
+			markup += '<li>'+'<small>'
+				+' '+/*i+' * '+*/dt+'</small> '
+				+ '<a href="' + item.link + '" target="_blank">'
+				+ item.title + '</a></li>'
+		} 
+		if (rendered) {
+			markup += '</div>';
+			jQuery('#feedContents').append(markup);
+			// --- sort .feedSrc elements ---
+			$('#feedContents .feedSrc').sortElements(function(a, b){
+				return $(b).attr('timestamp') > 
+					$(a).attr('timestamp') ? 1 : -1;
+			});
+			/*$('#feedContents .feedSrc').sortElements(function(a, b){
+				return $(a).attr('subject') > 
+					$(b).attr('subject') ? 1 : -1;
+			});*/
+		}
+	}    
+}
+
+
 $(document).ready(function(){
 	var n=0;
-	var even=-1;
 	var lkcnt = 0;
 	var feedcnt = 0;
-	var feedListurl="/rdfeed?cmd=rawfeeds&bmarks=bmarks.html"
-	
-	console.log("WILL DO: GET "+feedListurl);
-	$.get(feedListurl, function(html){
-		var feedsList;	
-		$('#feedsList').html(html);
-		feedsList = $('#feedsList a');
-		$.each(feedsList, function(key, val) {
-			var feedurl = $(this).attr('feedurl');	
-			var siteurl = $(this).attr('href');	
-				
-			/* read RSS feed and process it */
-			//var proxyurl = "/rdfeed?url="+encodeURIComponent(feedurl);
-			var proxyurl = "/rdfeed?url="+feedurl;
-			console.log('START GET FEEDURL '+feedurl);
-			
-			//----- get each individual rss feed
-			jQuery.getFeed({
-        		url: proxyurl,
-        		success: function(feed) {
-					console.log('PROCESS '+feedurl);
-					var html = '';
-					even++;
-					var column = !(even%2) ? 
-						"#feedContentsEven" : "#feedContentsOdd";
-					lkcnt += feed.items.length;
-					$('#lkcnt').text(lkcnt);
-					feedcnt++;
-					$('#feedcnt').text(feedcnt);
-					html += '<h5><a href="'+siteurl+'" target="_blank">'+
-									feed.title+"</a></h5>";
-					for(var i = 0; i < feed.items.length /*&& i < 15*/; i++) {
-						var item = feed.items[i];
-						var itemDt = new Date(item.updated);
-						var dt;
-						if (isValidDate(itemDt)) {
-							dt = $.format.date(itemDt, 'dd/M/yyyy');
-						} else {
-							dt = "--/--/----";
-						}
-						html += '<li>'
-						+'<small>'+dt+'</small> '
-						+ '<a href="'
-						+ item.link
-						+ '" target="_blank">'
-						+ item.title
-						+ '</a>';
-						
-						/*html += '<div class="updated">'
-						+ item.updated
-						+ '</div>';*/
-						
-						/*html += '<div>'
-						+ item.description
-						+ '</div>';*/
-				
-						html += '</li>'
-					}
-					//jQuery('#feedContents').append(html);
-					jQuery(column).append(html);
-				}    
+	var selFeedsCnt=0;
+	var xmldef;
+
+	$(document).on('countersUpdate',function(event,links){
+		lkcnt += links; 
+		$('#lkcnt').text(lkcnt);
+		feedcnt++; 
+		$('#feedcnt').text(feedcnt);
+		$('#selFeedsCnt').text(selFeedsCnt);
+	});
+	$('#subjects').on('click','li',function(ev){
+		var seltxt = $(this).text();
+		//alert(seltxt);
+		$('#refresh').text(seltxt);
+		$(document).trigger('refresh',seltxt);
+	});	
+	$(document).on('refresh',function(event,subj){
+		xmldef.done(function(xml){
+			var feedsList;	
+			lkcnt = 0;
+			feedcnt = 0;
+			selFeedsCnt=0;
+			console.log("FETCHING FEEDS OF SUBJECT "+subj);
+			jQuery('#feedContents').html("");
+			$(xml).find('outline').not('[xmlUrl]').each(function(){
+				var subject=$(this);
+				if (subject.attr('title') === subj) {
+					var selFeeds =	subject.find('outline[xmlUrl]');
+					selFeedsCnt = selFeeds.length;
+					selFeeds.each(function(ix) {
+						 feedurl = $(this).attr('xmlUrl');	
+						var siteurl = $(this).attr('htmlUrl');	
+						//var proxyurl = "/rdfeed?url="+feedurl;
+						var proxyurl = "/rdfeed?url="+encodeURIComponent(feedurl);
+
+						//----- get each individual rss feed
+						//console.log('START GET FEEDURL '+feedurl);
+						jQuery.getFeed({
+							url: proxyurl,
+							success: processFeed(feedurl,siteurl,subject)
+						});
+					});
+				}
 			});
-		 });
+		});
+	});
+
+	var feedListurl="/rdfeed?cmd=rawfeeds&bmarks=subscriptions.xml"
+	console.log("WILL GET "+feedListurl);
+	var xmldef = $.ajax({
+    	type: "GET",
+    	url: feedListurl,
+    	dataType: "xml"
+	});
+
+	xmldef.done(function(xmldata){
+		$(xmldata).find('outline').not('[xmlUrl]').each(function(){
+			var subject=$(this);
+			var subjtit = subject.attr('title');
+			console.log("SUBJECT "+subjtit);
+			var h = '<li><a class="subj" tabindex="-1">'
+				+subjtit+'</a></li>';
+			$('#subjects').append(h);
+		});
 	});
 });
 	</script>

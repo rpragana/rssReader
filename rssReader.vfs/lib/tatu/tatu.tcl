@@ -26,7 +26,7 @@ if {[file isfile $fn]} {
 	close $f
 }
 
-wm geometry . -0+0
+wm geometry . +0-50
 proc topblink {} {
 	if {[. cget -bg] eq "#c0c0a0"} {
 		. config -bg #a0a0c0
