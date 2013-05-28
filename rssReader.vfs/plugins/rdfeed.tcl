@@ -31,7 +31,7 @@ proc ::rdfeed::conv {url} {
 proc ::rdfeed::refreshCB {url {origUrl ""} tok} {
 	variable cacheDir
 	variable feeds
-	puts "refreshCB: $url -- $origUrl --> [::http::status $tok]"
+	#puts "refreshCB: $url -- $origUrl --> [::http::status $tok]"
 	upvar #0 $tok state
 	set stHttp [::http::ncode $tok]
 	if {[string index $stHttp 0] eq "3"} {
@@ -69,7 +69,7 @@ proc ::rdfeed::refreshCB {url {origUrl ""} tok} {
 proc ::rdfeed::refresh {} {
 	variable cacheDir
 	variable feeds
-	set n 0
+	set n 0 ; set rf 0
 	foreach {key url} $feeds {
 		incr n
 		set cfn [file join $cacheDir $key]
@@ -80,14 +80,15 @@ proc ::rdfeed::refresh {} {
 			  close [open $cfn w]
 			}	  
 			file mtime $cfn [clock seconds]
-			puts "REFSH: $n $key"
+			
+			set rf 1 ; puts "REFSH: $n $key"
 			catch {::http::geturl $url \
 				-command [list ::rdfeed::refreshCB $url ""]} err
 			break
 		}
 	}
-	puts "REFRESH: $n"	
-	after [expr 2 * 1000] ::rdfeed::refresh
+	if {!$rf} { puts "REFRESH: $n" }
+	after 500 ::rdfeed::refresh
 	### refresh ^ another in 2 seconds
 }
 
@@ -152,6 +153,18 @@ proc ::rdfeed::rdfeed {conn params} {
 		$conn out $d
 		return	
 	}
+
+	### return with no feed - to be cached first
+	### save dict with feeds
+	dict set feeds [conv $url] $url
+	set dfn [file join $cacheDir FEEDS]
+	set f1 [open $dfn w]
+	puts $f1 $feeds
+	close $f1
+	$conn outHeader 200 {Content-Type application/xml; charset:UTF-8} 0
+	$conn out ""	
+	return	
+	
 	puts "READ FEED $url"
 	#$conn outHeader 200 {Content-Type text/xml} 1
 	$conn outHeader 200 {Content-Type application/xml; charset:UTF-8} 1
