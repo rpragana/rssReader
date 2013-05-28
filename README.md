@@ -20,5 +20,11 @@ After that, you should run your favorite browser (I tested with Firefox and Goog
 After the program starts in the browser, you have to choose a subject to fetch 
 all news about that subject.
 
+## NOTES:
+
+**The newer released version have caching implemented in the server. All rss feeds
+already visited are cached and refreshed if older than 120 minutes (in the future
+we'll have this configurable). This makes the browser application much faster.**
+
 You may find interesting to visit my personal homepage at http://pragana.net or send me an email asking for features or suggesting me some improvements. You are welcome.
 

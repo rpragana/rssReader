@@ -191,6 +191,10 @@ equal keys must be indexed"
 		variable R
 		return $R(parsed_query)
 	}
+	method headers {} {
+		variable C
+		return $C(clientHeaders)
+	}
 	method rdquery {} {
 		variable C
 		set sock [$self cget -sock]
@@ -261,6 +265,7 @@ equal keys must be indexed"
 		} else {
 			### if first line of request, extract query, methods
 			if {$C(reqtmp) == {}} {
+				set C(clientHeaders) {}
 				lappend C(reqtmp) request $line
 				set C(method) [string range $line 0 \
 					[string wordend $line 0]-1]
@@ -272,6 +277,7 @@ equal keys must be indexed"
 					path $path
 				lappend C(reqtmp) query_array "[$self processQuery]"
 			}
+			lappend C(clientHeaders) $line	
 			set opt [regexp -inline {(.*?):\s*(.*)$} $line]
 			if {[llength $opt]} {
 				set key [string map {- _} [string tolower [lindex $opt 1]]]
@@ -539,15 +545,10 @@ equal keys must be indexed"
 			if {$C(bin)} {
 				set len [string length $C(body)]
 			} else {
-				#set s1 [string map {\n \r\n} $C(body)]
-				#puts "LEN=[string length $s1] BYTELEN=[string bytelength $s1]"
 				set len [string bytelength \
-					[string map {\n \r\n} $C(body)]]
-				#set len [string length \
 					[string map {\n \r\n} $C(body)]]
 			}
 			#tatu::log "Content-length: $len"
-			#puts "Content-length: $len"
 			puts $sock "Content-length: $len"
 		}
 		#puts $sock "Connection: close"
@@ -564,7 +565,6 @@ equal keys must be indexed"
 		flush $sock
 		$self done "" 0
 	}
-
 	method respond_new {{log 0}} {
 		variable C
 		set r ""
@@ -610,14 +610,13 @@ equal keys must be indexed"
 		#set f [open $memfn r]
 		#puts [read $f]
 		#close $f
-		#after 5000 [list $self respondEnd $memf $memfn]
+
 		fcopy $memf $sock -command [list $self respondEnd $memf $memfn]
-		after 300
+		#after 300
 	}
 	
 	method respondEnd {mf mfname {keepalive 0}} {
 		variable C
-		puts "respondEnd: $mfname"
 		set sock [$self cget -sock]
 		close $mf
 		file delete -force $mfname
@@ -644,6 +643,7 @@ namespace eval tatu {
 		tlsport 8001
 		socktls ""
 		appname "tatu"
+		ready 0
 	}
 	variable default "index.html"
 	variable root [file join $::starkit::topdir www]
