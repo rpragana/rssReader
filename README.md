@@ -20,11 +20,17 @@ After that, you should run your favorite browser (I tested with Firefox and Goog
 After the program starts in the browser, you have to choose a subject to fetch 
 all news about that subject.
 
-## NOTES:
-
+### NOTES
 **The newer released version have caching implemented in the server. All rss feeds
 already visited are cached and refreshed if older than 120 minutes (in the future
 we'll have this configurable). This makes the browser application much faster.**
+
+### TODO
+* Functions to add, remove, and edit feeds.
+* Browse individual rss feeds (not by subject only).
+* See item contents without opening the link; this is not my priority
+as I want most to use the rssReader to create tweets (twitter.com).
+* Anything else someone asks me...
 
 You may find interesting to visit my personal homepage at http://pragana.net or send me an email asking for features or suggesting me some improvements. You are welcome.
 
