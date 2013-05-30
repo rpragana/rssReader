@@ -43,7 +43,9 @@ jQuery.getFeed = function(options) {
                 if (jQuery.isFunction(options.success)) options.success(feed);
             },
             error: options.error,
-            global: options.global
+            global: options.global,
+			timeout: 30000
+			 /*timeout: 120000*/
         });
     }
 };

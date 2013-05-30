@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>RSS Feed Reader (port 15732)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+	
+	<link href="css/jqueryFileTree.css" type="text/css" rel="stylesheet" />
+    <link href="css/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
+	<style>
+			.demo {
+				width: 25%;
+				height: 500px;
+				border-top: solid 1px #BBB;
+				border-left: solid 1px #BBB;
+				border-bottom: solid 1px #FFF;
+				border-right: solid 1px #FFF;
+				background: #FFF;
+				overflow: scroll;
+				padding: 5px;
+				
+				float: left;	
+			}
+
+			.editor-wrapper {
+					float: right;
+					width: 73%;
+			}			
+			#editArea {
+				height: 500px; 
+				width: 100%;
+			}
+
+			h1.demo1 {
+			  font-size: 72px;
+  				background: -webkit-linear-gradient(#800, #0f0);
+  				background-clip: text;
+  				-webkit-background-clip: text;
+  				text-fill-color: transparent;
+  				-webkit-text-fill-color: transparent;
+			}
+
+		</style>
+
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+	
+	<link rel="stylesheet" href="css/font-awesome.css">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+                                   <link rel="shortcut icon" href="../assets/ico/favicon.png">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">RSS Reader</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+			  <li><a href="/log" target="_blank">Log/debug</a></li>
+			  <li><a href="#">Links count:<span id="lkcnt"></span> in 
+					  <span id="feedcnt"></span> feeds</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="row">
+        <!--<div class="span6">
+ 		<ul id="feedContentsEven" class="feedContents">
+		</ul>	
+  		</div>
+        <div class="span6">
+ 		<ul id="feedContentsOdd" class="feedContents">
+		</ul>	
+		</div>-->
+        <div class="span12">
+ 		<ul id="feedContents">
+		</ul>	
+  		</div>
+      </div>
+      <hr>
+
+      <footer>
+        <p>&copy; Rildo Pragana, 2013</p>
+      </footer>
+	<div id="feedsList" style="display: none;"></div>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery-migrate-1.1.1.js"></script>
+    <script src="js/bootstrap-transition.js"></script>
+    <script src="js/bootstrap-alert.js"></script>
+    <script src="js/bootstrap-modal.js"></script>
+    <script src="js/bootstrap-dropdown.js"></script>
+    <script src="js/bootstrap-scrollspy.js"></script>
+    <script src="js/bootstrap-tab.js"></script>
+    <script src="js/bootstrap-tooltip.js"></script>
+    <script src="js/bootstrap-popover.js"></script>
+    <script src="js/bootstrap-button.js"></script>
+    <script src="js/bootstrap-collapse.js"></script>
+    <script src="js/bootstrap-carousel.js"></script>
+    <script src="js/bootstrap-typeahead.js"></script>
+	
+	<script src="js/jquery.ui.position.js"></script>
+	<script src="js/jquery.contextMenu.js"></script>
+<!--	<script src="js/underscore.js"></script>
+	<script src="js/backbone.js"></script>
+	<script src="js/mustache.js"></script>
+-->
+	<script src="js/jquery.jfeed.js"></script>
+	<script src="js/jquery.dateFormat-1.0.js"></script>
+<!--	<script src="js/jqueryFileTree.js"></script>
+	<script src="js/edit_area_full.js"></script>
+-->
+
+	<script>
+
+function isValidDate(d) {
+  if ( Object.prototype.toString.call(d) !== "[object Date]" )
+    return false;
+  return !isNaN(d.getTime());
+}
+
+/**
+ * jQuery.fn.sortElements
+ * --------------
+ * @param Function comparator:
+ *   Exactly the same behaviour as [1,2,3].sort(comparator)
+ *   
+ * @param Function getSortable
+ *   A function that should return the element that is
+ *   to be sorted. The comparator will run on the
+ *   current collection, but you may want the actual
+ *   resulting sort to occur on a parent or another
+ *   associated element.
+ *   
+ *   E.g. $('td').sortElements(comparator, function(){
+ *      return this.parentNode; 
+ *   })
+ *   
+ *   The <td>'s parent (<tr>) will be sorted instead
+ *   of the <td> itself.
+ */
+jQuery.fn.sortElements = (function(){
+    var sort = [].sort;
+    return function(comparator, getSortable) {
+        getSortable = getSortable || function(){return this;};
+        var placements = this.map(function(){
+            var sortElement = getSortable.call(this),
+                parentNode = sortElement.parentNode,
+                // Since the element itself will change position, we have
+                // to have some way of storing its original position in
+                // the DOM. The easiest way is to have a 'flag' node:
+                nextSibling = parentNode.insertBefore(
+                    document.createTextNode(''),
+                    sortElement.nextSibling
+                );
+            return function() {
+                if (parentNode === this) {
+                    throw new Error(
+                        "You can't sort elements if any one is a descendant of another."
+                    );
+                }
+                // Insert before flag:
+                parentNode.insertBefore(this, nextSibling);
+                // Remove flag:
+                parentNode.removeChild(nextSibling);
+            };
+        });
+        return sort.call(this, comparator).each(function(i){
+            placements[i].call(getSortable.call(this));
+        });
+    };
+})();
+
+function processFeed(feedurl,siteurl,subject) {
+	return function(feed) {
+		console.log('******* PROCESS '+feedurl/*+'FEED '+
+				JSON.stringify(feed)+'\n\n\n\n'*/);
+		var markup = '';
+		var rendered;
+		var chkdt;
+		var n;
+		if (!feed.items) { 
+			$(document).trigger('countersUpdate',[0]);
+			return; 
+		}	
+		n = feed.items.length;
+		n = n<15 ? n : 15;	
+		$(document).trigger('countersUpdate',[n]);
+		
+		rendered=0;
+		chkdt = new Date().getTime(); 
+		chkdt -= 60*60*24*1000*5; // 5 days ago
+		for(var i = 0; i < feed.items.length && i < 10; i++) {
+			var item = feed.items[i];
+			var itemDt = new Date(item.updated);
+			var dt;
+			if (isValidDate(itemDt)) {
+				dt = $.format.date(itemDt, 'dd/M/yyyy');
+			} else {
+				break;
+				//dt = "--/--/----";
+			}
+			if (itemDt.getTime() < chkdt) { break; }
+			if (rendered === 0) {
+				rendered=1;
+				markup += '<div class="feedSrc" timestamp="'
+						+itemDt.getTime()+'" subject="'
+						+subject.attr('title')+'"><h5>'
+						+subject.attr('title')
+						+' - <a href="'+siteurl+
+					'" target="_blank">'+feed.title+'</a></h5>';
+				//console.log('ADDED '+feed.link+' *** DATE='+dt);
+			}
+			markup += '<li>'+'<small>'
+				+' '+/*i+' * '+*/dt+'</small> '
+				+ '<a href="' + item.link + '" target="_blank">'
+				+ item.title + '</a></li>'
+		} 
+		if (rendered) {
+			markup += '</div>';
+			jQuery('#feedContents').append(markup);
+			// --- sort .feedSrc elements ---
+			/*$('#feedContents .feedSrc').sortElements(function(a, b){
+				return $(b).attr('timestamp') > 
+					$(a).attr('timestamp') ? 1 : -1;
+			});*/
+			$('#feedContents .feedSrc').sortElements(function(a, b){
+				return $(a).attr('subject') > 
+					$(b).attr('subject') ? 1 : -1;
+			});
+		}
+	}    
+}
+
+function getData(feedurl,siteurl,subject,proxyurl) {
+	jQuery.getFeed({
+		url: proxyurl,
+		success: processFeed(feedurl,siteurl,subject)
+	});
+}
+
+
+
+$(document).ready(function(){
+	var n=0;
+	var lkcnt = 0;
+	var feedcnt = 0;
+	//var inproc=0;
+	$(document).bind('countersUpdate',function(event,links){
+		lkcnt += links; 
+		$('#lkcnt').text(lkcnt);
+		feedcnt++; 
+		$('#feedcnt').text(feedcnt);
+	});
+	//$(document).bind('feedProcessed',function(event){
+	//});
+
+	var feedListurl="/rdfeed?cmd=rawfeeds&bmarks=subscriptions.xml"
+	console.log("WILL GET "+feedListurl);
+	$.ajax({
+    	type: "GET",
+    	url: feedListurl,
+    	dataType: "xml"
+	}).done(function(xml){
+
+		var feedsList;	
+	console.log("READ FEEDLIST "+feedListurl);
+		xmldoc = xml;
+		$(xml).find('outline').not('[xmlUrl]').each(function(){
+			var subject=$(this);
+			var deferred=$.Deferred();
+			var promise = deferred.promise();
+			//if (subject.attr('title') === "business") {
+				subject.find('outline[xmlUrl]').each(function(ix) {
+					var feedurl = $(this).attr('xmlUrl');	
+					var siteurl = $(this).attr('htmlUrl');	
+					//var proxyurl = "/rdfeed?url="+encodeURIComponent(feedurl);
+					var proxyurl = "/rdfeed?url="+feedurl;
+
+					//setTimeout( function() {	
+						//----- get each individual rss feed
+						//console.log('START GET FEEDURL '+feedurl);
+				//		jQuery.getFeed({
+				//			url: proxyurl,
+				//			success: processFeed(feedurl,siteurl,subject)
+				//		});
+					//}, ix * 5000);
+		
+						promise=promise.then( function() {
+							console.log("REQUEST "+proxyurl);
+							return getData(feedurl,siteurl,subject,proxyurl);
+						});
+				});
+			//}
+			deferred.resolve();
+
+		});
+	});
+});
+	</script>
+
+  </body>
+</html>
+

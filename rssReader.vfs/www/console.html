@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+
+  <body>
+	<div id="console"></div>
+    <script src="js/jquery.js"></script>
+  
+
+
+	<script>
+			
+			$(document).ready(function() {
+
+function log(msg) {
+    var $out=$("<div />");
+    $out.html(msg);
+    $("#console").append($out);
+}
+
+log("STARTING PROGRAM");
+
+function getData(fruit) {
+        return $.ajax({
+            type: "GET",
+            url: "/echo",
+            data: {fruit:fruit},
+            dataType: "JSON",
+            success: function(){
+                log("GOT " + fruit);
+            }
+        });
+}
+
+var fruits=["orange","pear","banana","mango"];
+
+var deferred=$.Deferred();
+var promise = deferred.promise();
+
+$.each(fruits,function(index,fruit) {
+   promise=promise.then( function() {
+        log("REQUEST " + fruit);
+        return getData(fruit);
+    });
+});
+deferred.resolve();
+
+
+
+//fruits.reduce( function( curr, nextFruit ) {
+//    return curr.then( function() {
+//        log("REQUEST "+ nextFruit);
+//        return getData(nextFruit);
+//    });
+//}, $.Deferred.resolve());
+
+
+});
+
+	</script>
+
+
+
+
+</body>
+</html>
+

@@ -13,7 +13,8 @@
 package provide tatu 0.6
 
 ### use Tk send mechanism to debug via tkcon
-if {[string tolower [lindex $argv 0]] eq "gui" } {
+if { 1 || 
+	[string tolower [lindex $argv 0]] eq "gui" } {
 set ::GUI 1
 set argv [lrange $argv 1 end]
 package require Tk

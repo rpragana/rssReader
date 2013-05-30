@@ -87,9 +87,14 @@ proc ::rdfeed::refresh {} {
 			break
 		}
 	}
-	if {!$rf} { puts "REFRESH: $n" }
-	after 500 ::rdfeed::refresh
-	### refresh ^ another in 2 seconds
+	if {!$rf} { 
+		puts "REFRESH: $n - [clock format [clock seconds] \
+			-format "%H:%M:%S %d/%m"]" 
+		set dly 20000
+	} else {
+		set dly 300
+	}
+	after $dly ::rdfeed::refresh
 }
 
 proc ::rdfeed::cback {conn url tok} {
@@ -177,6 +182,9 @@ proc ::rdfeed::rdfeed {conn params} {
 after 10000 ::rdfeed::refresh
 
 tatu::addRoute "/rdfeed" ::rdfeed::rdfeed 
+
+wm geometry . +100-50
+wm geometry .console 60x14+225-60
 
 puts "RSS Feed Reader started - server at http://localhost:$tatu::server(port)"
 
