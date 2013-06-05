@@ -79,6 +79,8 @@ function processFeed(feedurl,siteurl,subject) {
 		var markup = '';
 		var rendered;
 		var chkdt;
+		var chkdt1;
+		var newsclass;
 		var n;
 		if (!feed.items) { 
 			$(document).trigger('countersUpdate',[0]);
@@ -89,8 +91,10 @@ function processFeed(feedurl,siteurl,subject) {
 		$(document).trigger('countersUpdate',[n]);
 		
 		rendered=0;
-		chkdt = new Date().getTime(); 
-		chkdt -= 60*60*24*1000*5; // 5 days ago
+		chkdt = chkdt1 = new Date().getTime(); 
+		chkdt -= 60*60*24*1000; // 24 hours ago
+		chkdt1 -= 60*60*48*1000; // 48 hours ago
+		//chkdt -= 60*60*24*1000*5; // 5 days ago
 		for(var i = 0; i < feed.items.length && i < 20; i++) {
 			var item = feed.items[i];
 			var itemDt = new Date(item.updated);
@@ -116,8 +120,13 @@ function processFeed(feedurl,siteurl,subject) {
 		//			'" target="_blank">'+feed.title+'</a></h5>';
 				//console.log('ADDED '+feed.link+' *** DATE='+dt);
 			}
-
-			markup += '<li timestamp="'+tstamp+'">'
+			newsclass = "";
+			if (itemDt.getTime() > chkdt) {
+				newsclass = "news";
+			} else if (itemDt.getTime() > chkdt1 ) {
+				newsclass = "news1";
+			}
+			markup += '<li timestamp="'+tstamp+'" class="'+newsclass+'">'
 				+'<div class="feedprov">'+feed.title+'</div>'
 				+'<div class="itemdt">'+' '+/*i+' * '+*/dt+'</div> '
 				+ '<a class="itemtit" href="' + item.link + '" target="_blank">'
@@ -210,6 +219,7 @@ $(window).load(function(){
 		}).retry({times: 3, timeout: 10000});
 
 		xmldef.done(function(xmldata){
+			//var items=0;
 			$('#subjects li').remove();
 			$(xmldata).find('outline').not('[xmlUrl]').each(function(){
 				var subject=$(this);
@@ -232,6 +242,40 @@ $(window).on('load',function(){
 	console.log('STARTING RELOAD FUNCTION BY TRIGGER');
 	$('#reload').trigger('click');
 });
+	
+
+key('n',function(){ /* focus next li */
+	if ($(':focus').prev('.itemdt').length == 0) {
+		$('.itemtit:first').focus(); 
+	} else {
+		$(':focus').parent().next().children('a').focus(); 
+	}
+});
+
+key('p',function(){ /* focus prev li */
+	if ($(':focus').prev('.itemdt').length == 0) {
+		$('.itemtit:last').focus(); 
+	} else {
+		$(':focus').parent().prev().children('a').focus(); 
+	}
+});
+
+var open_in_new_tab = function(url ) {
+  var win=window.open(url, '_blank');
+  window.focus();
+}
+
+key('v',function(){ /* open link */
+	if ($(':focus').prev('.itemdt').length) {
+		open_in_new_tab($(':focus').attr('href'));
+	}
+});
+
+$(document).on('hover','.itemtit',function(ev){
+	//console.log('target:'+ev.target);
+	$(ev.target).focus();	
+});
+
 
 //});
 

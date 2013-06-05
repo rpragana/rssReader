@@ -19,6 +19,10 @@
 	<link href="css/jqueryFileTree.css" type="text/css" rel="stylesheet" />
     <link href="css/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
 	<style>
+			.dropdown-menu {
+    			max-height: 500px;
+    			overflow-y: auto;
+			}
 			.demo {
 				width: 25%;
 				height: 500px;
@@ -74,6 +78,14 @@
 				width: 60%; 
 				height: 2.5ex;
 				overflow: hidden;
+			}
+			.news .itemdt {
+				color: #880000;
+				background: #cef;
+			}
+			.news1 .itemdt {
+				color: #660000;
+				background: #dfe;
 			}
 
 		</style>
@@ -185,6 +197,7 @@
 	<script src="js/jquery.dateFormat-1.0.js"></script>
 	<script src="js/jquery.ajax-retry.js"></script>
 	<script src="js/jqueryFileTree.js"></script>
+	<script src="js/keymaster.js"></script>
 	<script src="js/rssReader.js"></script>
 	
 <!--	<script src="js/underscore.js"></script>
