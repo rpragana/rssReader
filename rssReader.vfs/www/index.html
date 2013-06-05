@@ -72,12 +72,19 @@
 				width: 5%; 
 				font-size: 0.8em;
 			}
-			.itemtit {
+			.itemtitle {
 				float: left;
 				margin: 0 10px;
-				width: 60%; 
+				width: 55%; 
 				height: 2.5ex;
 				overflow: hidden;
+			}
+			.itemtit {
+				float: left;
+				margin: 0;
+			}
+			.itemtit:focus {
+				background: #ed8;
 			}
 			.news .itemdt {
 				color: #880000;
@@ -87,6 +94,7 @@
 				color: #660000;
 				background: #dfe;
 			}
+
 
 		</style>
 
@@ -144,7 +152,7 @@
     </div>
 
     <div class="container">
-
+			
       <div class="row">
         <!--<div class="span6">
  		<ul id="feedContentsEven" class="feedContents">

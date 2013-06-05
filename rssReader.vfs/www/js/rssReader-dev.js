@@ -126,11 +126,16 @@ function processFeed(feedurl,siteurl,subject) {
 			} else if (itemDt.getTime() > chkdt1 ) {
 				newsclass = "news1";
 			}
+//<i class="icon-external-link"></i>
 			markup += '<li timestamp="'+tstamp+'" class="'+newsclass+'">'
 				+'<div class="feedprov">'+feed.title+'</div>'
 				+'<div class="itemdt">'+' '+/*i+' * '+*/dt+'</div> '
-				+ '<a class="itemtit" href="' + item.link + '" target="_blank">'
-				+ item.title + '</a></li>'
+				+ '<a class="itemtit" href="'  
+					+ item.link + '" target="_blank">'
+				+ '<i class="icon-external-link"></i></a>'
+				+ '<a class="itemtitle" tabindex="-1" href="#">'
+				+ item.title + '</a>'
+				+ '</li>'
 		} 
 		if (rendered) {
 			//markup += '</div>';
@@ -248,7 +253,7 @@ key('n',function(){ /* focus next li */
 	if ($(':focus').prev('.itemdt').length == 0) {
 		$('.itemtit:first').focus(); 
 	} else {
-		$(':focus').parent().next().children('a').focus(); 
+		$(':focus').parent().next().children('a.itemtit').focus(); 
 	}
 });
 
@@ -256,7 +261,7 @@ key('p',function(){ /* focus prev li */
 	if ($(':focus').prev('.itemdt').length == 0) {
 		$('.itemtit:last').focus(); 
 	} else {
-		$(':focus').parent().prev().children('a').focus(); 
+		$(':focus').parent().prev().children('a.itemtit').focus(); 
 	}
 });
 
@@ -271,9 +276,9 @@ key('v',function(){ /* open link */
 	}
 });
 
-$(document).on('hover','.itemtit',function(ev){
+$(document).on('click','.itemtitle',function(ev){
 	//console.log('target:'+ev.target);
-	$(ev.target).focus();	
+	$(ev.target).parent().children('a.itemtit').focus();	
 });
 
 
