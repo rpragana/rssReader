@@ -288,11 +288,14 @@ $(document).on('click','.itemtitle',function(ev){
 	if (dsc.filter(':visible').length) {
 		show=0;
 	} 
-	$('.itemdesc').css({display: 'none'});
+	//$('.itemdesc').css({display: 'none'});
+	$('.itemdesc').removeClass('selected');
 	if (show) {
-		dsc.show();
+		//dsc.show();
+		dsc.addClass('selected');
 	}
-	$.scrollTo(p.children('a.itemtit'),1000, {offset: {top: -120, left: 0} });
+	//$.scrollTo(p.children('a.itemtit'),1000, {offset: {top: -120, left: 0} });
+	return false;
 });
 
 
