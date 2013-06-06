@@ -135,6 +135,7 @@ function processFeed(feedurl,siteurl,subject) {
 				+ '<i class="icon-external-link"></i></a>'
 				+ '<a class="itemtitle" tabindex="-1" href="#">'
 				+ item.title + '</a>'
+				+ '<div class="itemdesc">'+item.description+'</div>'
 				+ '</li>'
 		} 
 		if (rendered) {
@@ -277,8 +278,21 @@ key('v',function(){ /* open link */
 });
 
 $(document).on('click','.itemtitle',function(ev){
+	var p = $(ev.target).parent();	
+	var show=1;
+	var dsc;
 	//console.log('target:'+ev.target);
-	$(ev.target).parent().children('a.itemtit').focus();	
+	p.children('a.itemtit').focus();	
+	dsc = p.children('.itemdesc');
+
+	if (dsc.filter(':visible').length) {
+		show=0;
+	} 
+	$('.itemdesc').css({display: 'none'});
+	if (show) {
+		dsc.show();
+	}
+	$.scrollTo(p.children('a.itemtit'),1000, {offset: {top: -120, left: 0} });
 });
 
 
